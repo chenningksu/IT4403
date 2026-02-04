@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Modified Calculator Example (jQuery)</title>
+
+  <!-- jQuery CDN -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"
+          integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
+          crossorigin="anonymous"></script>
+
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 760px; margin: 24px auto; padding: 0 16px; }
+    label { display: block; margin-top: 12px; font-weight: 600; }
+    input, select, button { padding: 8px; font-size: 1rem; margin-top: 6px; width: 100%; max-width: 420px; }
+    .row { margin-top: 8px; }
+    #resultBox { margin-top: 18px; padding: 12px; border: 1px solid #ccc; border-radius: 8px; }
+    #resultValue { font-size: 1.2rem; font-weight: 700; }
+    .hint { font-size: 0.95rem; color: #333; margin-top: 6px; }
+    .error { color: #b00020; font-weight: 700; }
+  </style>
+</head>
+
+<body>
+  <h1>Modified Calculator Example</h1>
+  <p>This page uses <strong>jQuery</strong> for DOM selection, rendering, and event handling.</p>
+
+  <div class="row">
+    <label for="num1">Number 1</label>
+    <input id="num1" type="text" inputmode="decimal" placeholder="e.g., 10" />
+  </div>
+
+  <div class="row">
+    <label for="num2">Number 2</label>
+    <input id="num2" type="text" inputmode="decimal" placeholder="e.g., 4.5" />
+  </div>
+
+  <div class="row">
+    <label for="op">Calculation</label>
+    <select id="op">
+      <option value="add">Addition (+)</option>
+      <option value="sub">Subtraction (−)</option>
+      <option value="mul">Multiplication (*)</option>
+      <option value="div">Division (/)</option>
+    </select>
+  </div>
+
+  <div class="row">
+    <label for="colorName">Result color (name or CSS color)</label>
+    <input id="colorName" type="text" placeholder="e.g., red, blue, green, #1a73e8" />
+    <div class="hint">
+      Accessibility note: the result is shown as text (not color-only), so it’s readable even if the color isn’t.
+    </div>
+  </div>
+
+  <div id="resultBox" aria-live="polite">
+    <div id="resultText">Enter values to see the result.</div>
+  </div>
+
+  <script>
+    $(function () {
+      function parseNumber(value) {
+        // Accept things like "10", "4.5", "  3.2  "
+        // Reject empty or non-numeric
+        var trimmed = $.trim(value);
+        if (trimmed === "") return { ok: false, num: NaN };
+        var n = Number(trimmed);
+        return { ok: Number.isFinite(n), num: n };
+      }
+
+      function symbolFor(op) {
+        if (op === "add") return "+";
+        if (op === "sub") return "−";
+        if (op === "mul") return "*";
+        if (op === "div") return "/";
+        return "?";
+      }
+
+      function compute(a, b, op) {
+        if (op === "add") return a + b;
+        if (op === "sub") return a - b;
+        if (op === "mul") return a * b;
+        if (op === "div") return a / b;
+        return NaN;
+      }
+
+      function render() {
+        var a = parseNumber($("#num1").val());
+        var b = parseNumber($("#num2").val());
+        var op = $("#op").val();
+        var color = $.trim($("#colorName").val());
+
+        // Basic validation messages (text-based, not color-only)
+        if (!a.ok || !b.ok) {
+          $("#resultText").html(
+            '<span class="error">Please enter valid numbers in both boxes.</span>'
+          );
+          $("#resultBox").css("color", "inherit");
+          return;
+        }
+
+        if (op === "div" && b.num === 0) {
+          $("#resultText").html(
+            '<span class="error">Division by zero is not allowed. Please change Number 2.</span>'
+          );
+          $("#resultBox").css("color", "inherit");
+          return;
+        }
+
+        var ans = compute(a.num, b.num, op);
+        var sym = symbolFor(op);
+
+        // Output rendering with jQuery (no document.write)
+        $("#resultText").html(
+          "<div><strong>Expression:</strong> " +
+            a.num + " " + sym + " " + b.num +
+          "</div>" +
+          "<div><strong>Result:</strong> <span id='resultValue'>" + ans + "</span></div>"
+        );
+
+        // Color customization (still readable because text explicitly says "Result: <value>")
+        if (color) {
+          $("#resultBox").css("color", color);
+        } else {
+          $("#resultBox").css("color", "inherit");
+        }
+      }
+
+      // Event handling in jQuery
+      $("#num1, #num2, #colorName").on("input", render);
+      $("#op").on("change", render);
+
+      // Initial render
+      render();
+    });
+  </script>
+</body>
+</html>
