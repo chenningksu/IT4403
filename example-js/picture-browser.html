@@ -111,8 +111,8 @@
   </div>
 
   <script>
-    // ✅ Store 4–5 image URLs in an array (use your repo paths OR full URLs)
-    // Use your provided image as a placeholder for now.
+    // Store 4–5 image URLs in an array 
+    // Images are from personal beekeeping stuff.
     const images = [
       {
         url: "/images/picture-browser/image1.png", // <-- put your provided image here
@@ -138,7 +138,7 @@
 
     let currentIndex = 0;
 
-    // Fade transition that won’t mess with accessibility
+    // Fade transition
     function showImage(index) {
       const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -152,7 +152,7 @@
       $(".thumb").attr("aria-current", "false");
       $(`.thumb[data-index='${currentIndex}']`).attr("aria-current", "true");
 
-      // Transition (skip if user prefers reduced motion)
+      // Transition 
       if (reduceMotion) {
         $("#mainImage").attr({ src: item.url, alt: item.alt });
         return;
@@ -199,7 +199,7 @@
       $("#nextBtn").on("click", nextImage);
       $("#prevBtn").on("click", prevImage);
 
-      // Optional: keyboard support (nice for accessibility)
+      // keyboard support 
       $(document).on("keydown", function (e) {
         if (e.key === "ArrowRight") nextImage();
         if (e.key === "ArrowLeft") prevImage();
