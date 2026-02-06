@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Picture Browser Application</title>
+
+  <!-- jQuery (required for the lab if you're doing jQuery work) -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 24px; background: #f7f7f7; }
+    .wrap { max-width: 980px; margin: 0 auto; }
+    h1 { margin: 0 0 10px; }
+    p { margin: 0 0 18px; color: #444; }
+
+    .viewer {
+      background: #fff;
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 8px 22px rgba(0,0,0,.08);
+    }
+
+    .main-img {
+      width: 100%;
+      max-height: 520px;
+      object-fit: contain;
+      border-radius: 10px;
+      background: #111;
+      display: block;
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: none;
+      padding: 10px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      background: #1f2937;
+      color: #fff;
+      font-size: 14px;
+    }
+    button:focus { outline: 3px solid #93c5fd; outline-offset: 2px; }
+    .status { color: #333; font-size: 14px; }
+
+    .thumbs {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .thumb {
+      border: 2px solid transparent;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #fff;
+      cursor: pointer;
+    }
+    .thumb[aria-current="true"] { border-color: #2563eb; }
+    .thumb img {
+      width: 100%;
+      height: 90px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .attribution {
+      margin-top: 16px;
+      font-size: 13px;
+      color: #555;
+    }
+
+    /* Respect reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      * { scroll-behavior: auto !important; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <h1>Picture Browser Application</h1>
+    <p>Select a thumbnail to view the image. You can also use Next/Previous.</p>
+
+    <div class="viewer" role="region" aria-label="Image viewer">
+      <img id="mainImage" class="main-img" src="" alt="" />
+
+      <div class="controls">
+        <button id="prevBtn" type="button" aria-label="Previous image">Previous</button>
+        <button id="nextBtn" type="button" aria-label="Next image">Next</button>
+        <span id="status" class="status" aria-live="polite"></span>
+      </div>
+
+      <div id="thumbs" class="thumbs" aria-label="Image thumbnails"></div>
+
+      <!-- Only needed if you use Creative Commons images that require attribution -->
+      <div class="attribution" id="attribution">
+        <!-- Example:
+        <strong>Attribution:</strong> Photo by Name (CC BY 4.0)
+        -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ✅ Store 4–5 image URLs in an array (use your repo paths OR full URLs)
+    // Use your provided image as a placeholder for now.
+    const images = [
+      {
+        url: "images/picture-browser/board1.png", // <-- put your provided image here
+        alt: "A jar of wildflower honey on a charcuterie board with cheeses, crackers, and grapes."
+      },
+      {
+        url: "images/picture-browser/board2.png",
+        alt: "Placeholder image 2: replace with your photo and descriptive alt text."
+      },
+      {
+        url: "images/picture-browser/board3.png",
+        alt: "Placeholder image 3: replace with your photo and descriptive alt text."
+      },
+      {
+        url: "images/picture-browser/board4.png",
+        alt: "Placeholder image 4: replace with your photo and descriptive alt text."
+      },
+      {
+        url: "images/picture-browser/board5.png",
+        alt: "Placeholder image 5: replace with your photo and descriptive alt text."
+      }
+    ];
+
+    let currentIndex = 0;
+
+    // Fade transition that won’t mess with accessibility
+    function showImage(index) {
+      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      currentIndex = index;
+      const item = images[currentIndex];
+
+      // Update status text (not color-only)
+      $("#status").text(`Image ${currentIndex + 1} of ${images.length}`);
+
+      // Update thumbnail selection
+      $(".thumb").attr("aria-current", "false");
+      $(`.thumb[data-index='${currentIndex}']`).attr("aria-current", "true");
+
+      // Transition (skip if user prefers reduced motion)
+      if (reduceMotion) {
+        $("#mainImage").attr({ src: item.url, alt: item.alt });
+        return;
+      }
+
+      $("#mainImage").fadeOut(150, function () {
+        $("#mainImage").attr({ src: item.url, alt: item.alt }).fadeIn(150);
+      });
+    }
+
+    function nextImage() {
+      const next = (currentIndex + 1) % images.length;
+      showImage(next);
+    }
+
+    function prevImage() {
+      const prev = (currentIndex - 1 + images.length) % images.length;
+      showImage(prev);
+    }
+
+    function buildThumbnails() {
+      const $thumbs = $("#thumbs");
+      $thumbs.empty();
+
+      images.forEach((img, i) => {
+        const $btn = $(`
+          <button class="thumb" type="button" data-index="${i}" aria-current="false">
+            <img src="${img.url}" alt="Thumbnail: ${img.alt}">
+          </button>
+        `);
+
+        $btn.on("click", function () {
+          const idx = Number($(this).data("index"));
+          showImage(idx);
+        });
+
+        $thumbs.append($btn);
+      });
+    }
+
+    $(function () {
+      buildThumbnails();
+
+      $("#nextBtn").on("click", nextImage);
+      $("#prevBtn").on("click", prevImage);
+
+      // Optional: keyboard support (nice for accessibility)
+      $(document).on("keydown", function (e) {
+        if (e.key === "ArrowRight") nextImage();
+        if (e.key === "ArrowLeft") prevImage();
+      });
+
+      showImage(0);
+    });
+  </script>
+</body>
+</html>
