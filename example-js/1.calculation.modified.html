@@ -111,7 +111,7 @@
         var ans = compute(a.num, b.num, op);
         var sym = symbolFor(op);
 
-        // Output rendering with jQuery (no document.write)
+        // Output rendering with jQuery (
         $("#resultText").html(
           "<div><strong>Expression:</strong> " +
             a.num + " " + sym + " " + b.num +
@@ -119,7 +119,7 @@
           "<div><strong>Result:</strong> <span id='resultValue'>" + ans + "</span></div>"
         );
 
-        // Color customization (still readable because text explicitly says "Result: <value>")
+        // Color customization 
         if (color) {
           $("#resultBox").css("color", color);
         } else {
