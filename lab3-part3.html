@@ -4,10 +4,26 @@
     <title>Google Book JSON</title>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="lab3-part3.js"></script>
+
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 24px; background: #f7f7f7; }
+        .wrap { max-width: 900px; margin: 0 auto; }
+        h1 { margin-bottom: 8px; }
+        p { color: #555; margin-bottom: 20px; }
+        #output { background: #fff; padding: 18px; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+    </style>
+    
 </head>
 <body>
+  <div class="wrap">
 
-<div id="output"></div>
-
+    <h1>Book JSON</h1>
+    <p>
+      This page uses a JavaScript JSON object, pulls out fields like title,
+      publisher, publish date, and ISBN, and displays them below.
+    </p>
+      
+    <div id="output"></div>
+  </div>
 </body>
 </html>
