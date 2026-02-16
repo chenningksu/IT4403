@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Lab 3 - Weather JSON</title>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 24px; background: #f7f7f7; }
+        .wrap { max-width: 900px; margin: 0 auto; }
+        h1 { margin-bottom: 8px; }
+        p { color: #555; margin-bottom: 20px; }
+        .card {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        }
+        .row { margin: 8px 0; }
+        .label { font-weight: bold; }
+    </style>
+</head>
+
+<body>
+<div class="wrap">
+
+    <h1>Weather JSON</h1>
+    <p>
+        This page reads data from a weather.json file,
+        extracts fields such as city name, temperature,
+        humidity, and wind speed, and displays them below.
+    </p>
+
+    <div class="card" id="output">
+        Loading weather data...
+    </div>
+
+</div>
+
+<script>
+$(document).ready(function () {
+
+    $.getJSON("weather.json", function (data) {
+
+        var city = data.name;
+        var country = data.sys.country;
+        var temperatureKelvin = data.main.temp;
+        var humidity = data.main.humidity;
+        var description = data.weather[0].description;
+        var windSpeed = data.wind.speed;
+
+        // Convert Kelvin to Fahrenheit
+        var tempF = (temperatureKelvin - 273.15) * 9/5 + 32;
+        tempF = tempF.toFixed(1);
+
+        $("#output").html(
+            "<h2>" + city + ", " + country + "</h2>" +
+            "<p><strong>Temperature:</strong> " + tempF + " °F</p>" +
+            "<p><strong>Condition:</strong> " + description + "</p>" +
+            "<p><strong>Humidity:</strong> " + humidity + "%</p>" +
+            "<p><strong>Wind Speed:</strong> " + windSpeed + " m/s</p>"
+        );
+
+    }).fail(function () {
+        $("#output").html("Could not load weather.json file.");
+    });
+
+});
+</script>
+
+</body>
+</html>
