@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Google Book JSON</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="lab3-part3.js"></script>
+</head>
+<body>
+
+<div id="output"></div>
+
+</body>
+</html>
