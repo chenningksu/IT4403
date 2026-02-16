@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
     <title>Lab 3 - Weather JSON</title>
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
@@ -55,7 +56,7 @@ $(document).ready(function () {
 
         $("#output").html(
             "<h2>" + city + ", " + country + "</h2>" +
-            "<p><strong>Temperature:</strong> " + tempF + " °F</p>" +
+            "<p><strong>Temperature:</strong> " + tempF + " &deg;F</p>" +
             "<p><strong>Condition:</strong> " + description + "</p>" +
             "<p><strong>Humidity:</strong> " + humidity + "%</p>" +
             "<p><strong>Wind Speed:</strong> " + windSpeed + " m/s</p>"
