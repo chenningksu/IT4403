@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lab 4 - Album + Photos (JSONPlaceholder)</title>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+  <style>
+    :root{
+      --bg:#f4f6f8; --card:#fff; --text:#1a1a1a; --muted:#4b5563;
+      --brand:#0b3c5d; --border:#e5e7eb;
+    }
+    body{ margin:0; font-family: Arial, Helvetica, sans-serif; background:var(--bg); color:var(--text); }
+    header{ background:var(--brand); color:#fff; padding:18px 16px; }
+    header h1{ margin:0; font-size:1.6rem; }
+    header p{ margin:6px 0 0; opacity:.9; }
+    main{ max-width: 1150px; margin: 18px auto; padding: 0 16px 28px; }
+
+    .card{
+      background:var(--card); border:1px solid var(--border); border-radius: 14px;
+      padding:16px; box-shadow: 0 2px 10px rgba(0,0,0,.04); margin-bottom:16px;
+    }
+    .muted{ color: var(--muted); }
+    a{ color: var(--brand); text-decoration:none; }
+    a:hover{ text-decoration: underline; }
+    .status{ margin-top:8px; }
+    .error{ color:#b91c1c; }
+
+    .photos{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    @media (min-width: 650px){ .photos{ grid-template-columns: 1fr 1fr; } }
+    @media (min-width: 980px){ .photos{ grid-template-columns: 1fr 1fr 1fr; } }
+
+    .photoItem{
+      border:1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px;
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      background:#fff;
+    }
+    .thumb{
+      width: 72px; height: 72px;
+      border-radius:10px; border:1px solid var(--border);
+      object-fit: cover;
+      flex: 0 0 auto;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>Lab 4: RESTful Web APIs</h1>
+    <p>Page 2 — Display album info + all photos (titles + thumbnails)</p>
+  </header>
+
+  <main>
+    <div class="card">
+      <a href="user_albums.html">← Back to Page 1</a>
+      <div class="muted" style="margin-top:8px;">
+        This page reads <code>albumId</code> from the query string (example: <code>?albumId=7</code>).
+      </div>
+    </div>
+
+    <section class="card">
+      <h2 style="margin:0 0 10px;">Album Information</h2>
+      <div id="albumStatus" class="status muted">Loading album…</div>
+      <div id="albumBox" style="display:none;"></div>
+    </section>
+
+    <section class="card">
+      <h2 style="margin:0 0 10px;">Photos</h2>
+      <div id="photoStatus" class="status muted">Loading photos…</div>
+      <div id="photoGrid" class="photos" style="display:none;"></div>
+    </section>
+  </main>
+
+  <script>
+    const BASE = "https://jsonplaceholder.typicode.com";
+
+    function esc(str){
+      return String(str)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    function showError(selector, msg){
+      $(selector).removeClass("muted").addClass("error").text(msg);
+    }
+
+    $(function(){
+      const params = new URLSearchParams(window.location.search);
+      const albumId = params.get("albumId");
+
+      if(!albumId){
+        showError("#albumStatus", "Missing albumId in URL. Example: album_photos.html?albumId=1");
+        $("#photoStatus").hide();
+        return;
+      }
+
+      // REST uses resource URLs like /albums/{id} and /albums/{id}/photos :contentReference[oaicite:2]{index=2}
+      const albumUrl = `${BASE}/albums/${encodeURIComponent(albumId)}`;
+      const photosUrl = `${BASE}/albums/${encodeURIComponent(albumId)}/photos`;
+
+      // 1) Album information
+      $.getJSON(albumUrl)
+        .done(album => {
+          const html = `
+            <div><strong>Album title:</strong> ${esc(album.title)}</div>
+            <div><strong>Album ID:</strong> ${esc(album.id)}</div>
+            <div><strong>User ID:</strong> ${esc(album.userId)}</div>
+          `;
+          $("#albumBox").html(html).show();
+          $("#albumStatus").hide();
+        })
+        .fail(() => showError("#albumStatus", "Failed to load album information."));
+
+      // 2) Photos (title + thumbnail)
+      $.getJSON(photosUrl)
+        .done(photos => {
+          $("#photoGrid").empty();
+
+          photos.forEach(p => {
+            $("#photoGrid").append(`
+              <div class="photoItem">
+                <img class="thumb" src="${esc(p.thumbnailUrl)}" alt="thumbnail" />
+                <div>
+                  <div><strong>${esc(p.title)}</strong></div>
+                  <div class="muted">Photo ID: ${esc(p.id)}</div>
+                </div>
+              </div>
+            `);
+          });
+
+          $("#photoGrid").show();
+          $("#photoStatus").hide();
+        })
+        .fail(() => showError("#photoStatus", "Failed to load photos for this album."));
+    });
+  </script>
+</body>
+</html>
