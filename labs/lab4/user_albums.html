@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lab 4 - User + Albums (JSONPlaceholder)</title>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+  <style>
+    :root{
+      --bg:#f4f6f8; --card:#fff; --text:#1a1a1a; --muted:#4b5563;
+      --brand:#0b3c5d; --border:#e5e7eb;
+    }
+    body{ margin:0; font-family: Arial, Helvetica, sans-serif; background:var(--bg); color:var(--text); }
+    header{ background:var(--brand); color:#fff; padding:18px 16px; }
+    header h1{ margin:0; font-size:1.6rem; }
+    header p{ margin:6px 0 0; opacity:.9; }
+    main{ max-width: 1050px; margin: 18px auto; padding: 0 16px 28px; }
+    .card{
+      background:var(--card); border:1px solid var(--border); border-radius: 14px;
+      padding:16px; box-shadow: 0 2px 10px rgba(0,0,0,.04); margin-bottom:16px;
+    }
+    .grid{ display:grid; grid-template-columns: 1fr; gap:16px; }
+    @media (min-width: 900px){ .grid{ grid-template-columns: 1fr 1fr; } }
+    h2{ margin:0 0 10px; font-size:1.2rem; }
+    .muted{ color: var(--muted); }
+    .kv{ margin: 7px 0; }
+    .kv strong{ display:inline-block; min-width: 120px; }
+    ul{ margin: 8px 0 0; padding-left: 18px; }
+    li{ margin: 7px 0; }
+    a{ color: var(--brand); text-decoration:none; }
+    a:hover{ text-decoration: underline; }
+    .status{ margin-top:8px; }
+    .error{ color:#b91c1c; }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>Lab 4: RESTful Web APIs</h1>
+    <p>Page 1 — Display one user + all albums for that user (JSONPlaceholder)</p>
+  </header>
+
+  <main>
+    <div class="card">
+      <strong>Student Project Disclaimer:</strong> This website is a student project created for coursework.
+      Content is for educational purposes only.
+    </div>
+
+    <div class="card">
+      <label for="userSelect"><strong>Select User:</strong></label>
+      <select id="userSelect">
+        <option value="1" selected>User 1</option>
+        <option value="2">User 2</option>
+        <option value="3">User 3</option>
+        <option value="4">User 4</option>
+        <option value="5">User 5</option>
+        <option value="6">User 6</option>
+        <option value="7">User 7</option>
+        <option value="8">User 8</option>
+        <option value="9">User 9</option>
+        <option value="10">User 10</option>
+      </select>
+      <span class="muted" style="margin-left:10px;">(Change user to prove your page is dynamic)</span>
+    </div>
+
+    <div class="grid">
+      <section class="card">
+        <h2>User Information</h2>
+        <div id="userStatus" class="status muted">Loading user…</div>
+        <div id="userBox" style="display:none;"></div>
+      </section>
+
+      <section class="card">
+        <h2>Albums for This User</h2>
+        <div id="albumStatus" class="status muted">Loading albums…</div>
+        <ul id="albumList" style="display:none;"></ul>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    // REST is resource-oriented and uses structured URIs (ex: /users/1/albums) :contentReference[oaicite:1]{index=1}
+    const BASE = "https://jsonplaceholder.typicode.com";
+
+    function esc(str){
+      return String(str)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    function showError(selector, msg){
+      $(selector).removeClass("muted").addClass("error").text(msg);
+    }
+
+    function loadUserAndAlbums(userId){
+      $("#userBox").hide().empty();
+      $("#albumList").hide().empty();
+      $("#userStatus").removeClass("error").addClass("muted").text("Loading user…").show();
+      $("#albumStatus").removeClass("error").addClass("muted").text("Loading albums…").show();
+
+      const userUrl = `${BASE}/users/${userId}`;
+      const albumsUrl = `${BASE}/users/${userId}/albums`;
+
+      // 1) Load single user (GET)
+      $.getJSON(userUrl)
+        .done(user => {
+          const addr = `${user.address.street}, ${user.address.suite}, ${user.address.city} ${user.address.zipcode}`;
+          const html = `
+            <div class="kv"><strong>Name:</strong> ${esc(user.name)}</div>
+            <div class="kv"><strong>Email:</strong> ${esc(user.email)}</div>
+            <div class="kv"><strong>Address:</strong> ${esc(addr)}</div>
+            <div class="kv"><strong>Company:</strong> ${esc(user.company.name)}</div>
+            <div class="kv muted"><strong>User ID:</strong> ${esc(user.id)}</div>
+          `;
+          $("#userBox").html(html).show();
+          $("#userStatus").hide();
+        })
+        .fail(() => showError("#userStatus", "Failed to load user data."));
+
+      // 2) Load albums for that user (GET)
+      $.getJSON(albumsUrl)
+        .done(albums => {
+          albums.forEach(a => {
+            // Each album title is a link to Page 2 and passes albumId (query param)
+            const link = `album_photos.html?albumId=${encodeURIComponent(a.id)}`;
+            $("#albumList").append(`<li><a href="${link}">${esc(a.title)}</a></li>`);
+          });
+          $("#albumList").show();
+          $("#albumStatus").hide();
+        })
+        .fail(() => showError("#albumStatus", "Failed to load albums."));
+    }
+
+    $(function(){
+      // initial load
+      loadUserAndAlbums($("#userSelect").val());
+
+      // reload when user changes
+      $("#userSelect").on("change", function(){
+        loadUserAndAlbums(this.value);
+      });
+    });
+  </script>
+</body>
+</html>
