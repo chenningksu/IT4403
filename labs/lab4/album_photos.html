@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Lab 4 - Album + Photos (JSONPlaceholder)</title>
+  <title>Lab 4: JSONPlaceholder - Album + Photos</title>
 
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
@@ -27,6 +27,7 @@
     a:hover{ text-decoration: underline; }
     .status{ margin-top:8px; }
     .error{ color:#b91c1c; }
+    code{ background:#eef2f7; padding:2px 6px; border-radius: 6px; }
 
     .photos{
       display:grid;
@@ -56,8 +57,8 @@
 
 <body>
   <header>
-    <h1>Lab 4: RESTful Web APIs</h1>
-    <p>Page 2 — Display album info + all photos (titles + thumbnails)</p>
+    <h1>Lab 4: RESTful Web APIs (JSONPlaceholder)</h1>
+    <p>Page 2 — Album Information + Photos (titles + thumbnails)</p>
   </header>
 
   <main>
@@ -69,13 +70,13 @@
     </div>
 
     <section class="card">
-      <h2 style="margin:0 0 10px;">Album Information</h2>
+      <h2 style="margin:0 0 10px;">Requirement 1: Display Album Information</h2>
       <div id="albumStatus" class="status muted">Loading album…</div>
       <div id="albumBox" style="display:none;"></div>
     </section>
 
     <section class="card">
-      <h2 style="margin:0 0 10px;">Photos</h2>
+      <h2 style="margin:0 0 10px;">Requirement 2: Display Photos from Selected Album</h2>
       <div id="photoStatus" class="status muted">Loading photos…</div>
       <div id="photoGrid" class="photos" style="display:none;"></div>
     </section>
@@ -107,24 +108,21 @@
         return;
       }
 
-      // REST uses resource URLs like /albums/{id} and /albums/{id}/photos :contentReference[oaicite:2]{index=2}
+      // Album info + Photos (using query param style for consistency)
       const albumUrl = `${BASE}/albums/${encodeURIComponent(albumId)}`;
-      const photosUrl = `${BASE}/albums/${encodeURIComponent(albumId)}/photos`;
+      const photosUrl = `${BASE}/photos?albumId=${encodeURIComponent(albumId)}`;
 
-      // 1) Album information
       $.getJSON(albumUrl)
         .done(album => {
-          const html = `
-            <div><strong>Album title:</strong> ${esc(album.title)}</div>
+          $("#albumBox").html(`
+            <div><strong>Album Title:</strong> ${esc(album.title)}</div>
             <div><strong>Album ID:</strong> ${esc(album.id)}</div>
             <div><strong>User ID:</strong> ${esc(album.userId)}</div>
-          `;
-          $("#albumBox").html(html).show();
+          `).show();
           $("#albumStatus").hide();
         })
-        .fail(() => showError("#albumStatus", "Failed to load album information."));
+        .fail(() => showError("#albumStatus", "Failed to load album info."));
 
-      // 2) Photos (title + thumbnail)
       $.getJSON(photosUrl)
         .done(photos => {
           $("#photoGrid").empty();
@@ -144,7 +142,7 @@
           $("#photoGrid").show();
           $("#photoStatus").hide();
         })
-        .fail(() => showError("#photoStatus", "Failed to load photos for this album."));
+        .fail(() => showError("#photoStatus", "Failed to load photos."));
     });
   </script>
 </body>
