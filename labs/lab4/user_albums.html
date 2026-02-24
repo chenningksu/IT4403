@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Lab 4 - User + Albums (JSONPlaceholder)</title>
+  <title>Lab 4: JSONPlaceholder - User + Albums</title>
 
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
@@ -33,13 +33,14 @@
     a:hover{ text-decoration: underline; }
     .status{ margin-top:8px; }
     .error{ color:#b91c1c; }
+    code{ background:#eef2f7; padding:2px 6px; border-radius: 6px; }
   </style>
 </head>
 
 <body>
   <header>
-    <h1>Lab 4: RESTful Web APIs</h1>
-    <p>Page 1 — Display one user + all albums for that user (JSONPlaceholder)</p>
+    <h1>Lab 4: RESTful Web APIs (JSONPlaceholder)</h1>
+    <p>Page 1 — One User + Albums (using required API URLs)</p>
   </header>
 
   <main>
@@ -48,32 +49,22 @@
       Content is for educational purposes only.
     </div>
 
-    <div class="card">
-      <label for="userSelect"><strong>Select User:</strong></label>
-      <select id="userSelect">
-        <option value="1" selected>User 1</option>
-        <option value="2">User 2</option>
-        <option value="3">User 3</option>
-        <option value="4">User 4</option>
-        <option value="5">User 5</option>
-        <option value="6">User 6</option>
-        <option value="7">User 7</option>
-        <option value="8">User 8</option>
-        <option value="9">User 9</option>
-        <option value="10">User 10</option>
-      </select>
-      <span class="muted" style="margin-left:10px;">(Change user to prove your page is dynamic)</span>
+    <div class="card muted">
+      <div><strong>Required endpoints used on this page:</strong></div>
+      <div>User: <code>https://jsonplaceholder.typicode.com/users/1</code></div>
+      <div>Albums: <code>https://jsonplaceholder.typicode.com/albums?userId=1</code></div>
     </div>
 
     <div class="grid">
       <section class="card">
-        <h2>User Information</h2>
+        <h2>Requirement 1: Display One User</h2>
         <div id="userStatus" class="status muted">Loading user…</div>
         <div id="userBox" style="display:none;"></div>
       </section>
 
       <section class="card">
-        <h2>Albums for This User</h2>
+        <h2>Requirement 2: Display Albums for That User</h2>
+        <div class="muted">Click an album title to open Page 2 (passes albumId).</div>
         <div id="albumStatus" class="status muted">Loading albums…</div>
         <ul id="albumList" style="display:none;"></ul>
       </section>
@@ -81,8 +72,9 @@
   </main>
 
   <script>
-    // REST is resource-oriented and uses structured URIs (ex: /users/1/albums) :contentReference[oaicite:1]{index=1}
-    const BASE = "https://jsonplaceholder.typicode.com";
+    // REQUIRED URLs (exactly as provided)
+    const USER_URL = "https://jsonplaceholder.typicode.com/users/1";
+    const ALBUMS_URL = "https://jsonplaceholder.typicode.com/albums?userId=1";
 
     function esc(str){
       return String(str)
@@ -97,53 +89,48 @@
       $(selector).removeClass("muted").addClass("error").text(msg);
     }
 
-    function loadUserAndAlbums(userId){
-      $("#userBox").hide().empty();
-      $("#albumList").hide().empty();
-      $("#userStatus").removeClass("error").addClass("muted").text("Loading user…").show();
-      $("#albumStatus").removeClass("error").addClass("muted").text("Loading albums…").show();
+    function renderUser(user){
+      const address = user.address
+        ? `${user.address.street}, ${user.address.suite}, ${user.address.city} ${user.address.zipcode}`
+        : "N/A";
 
-      const userUrl = `${BASE}/users/${userId}`;
-      const albumsUrl = `${BASE}/users/${userId}/albums`;
+      const company = user.company ? user.company.name : "N/A";
 
-      // 1) Load single user (GET)
-      $.getJSON(userUrl)
-        .done(user => {
-          const addr = `${user.address.street}, ${user.address.suite}, ${user.address.city} ${user.address.zipcode}`;
-          const html = `
-            <div class="kv"><strong>Name:</strong> ${esc(user.name)}</div>
-            <div class="kv"><strong>Email:</strong> ${esc(user.email)}</div>
-            <div class="kv"><strong>Address:</strong> ${esc(addr)}</div>
-            <div class="kv"><strong>Company:</strong> ${esc(user.company.name)}</div>
-            <div class="kv muted"><strong>User ID:</strong> ${esc(user.id)}</div>
-          `;
-          $("#userBox").html(html).show();
-          $("#userStatus").hide();
-        })
-        .fail(() => showError("#userStatus", "Failed to load user data."));
+      const html = `
+        <div class="kv"><strong>Name:</strong> ${esc(user.name)}</div>
+        <div class="kv"><strong>Email:</strong> ${esc(user.email)}</div>
+        <div class="kv"><strong>Address:</strong> ${esc(address)}</div>
+        <div class="kv"><strong>Company:</strong> ${esc(company)}</div>
+        <div class="kv muted"><strong>User ID:</strong> ${esc(user.id)}</div>
+      `;
 
-      // 2) Load albums for that user (GET)
-      $.getJSON(albumsUrl)
-        .done(albums => {
-          albums.forEach(a => {
-            // Each album title is a link to Page 2 and passes albumId (query param)
-            const link = `album_photos.html?albumId=${encodeURIComponent(a.id)}`;
-            $("#albumList").append(`<li><a href="${link}">${esc(a.title)}</a></li>`);
-          });
-          $("#albumList").show();
-          $("#albumStatus").hide();
-        })
-        .fail(() => showError("#albumStatus", "Failed to load albums."));
+      $("#userBox").html(html).show();
+      $("#userStatus").hide();
+    }
+
+    function renderAlbums(albums){
+      $("#albumList").empty();
+
+      albums.forEach(a => {
+        // Link to Page 2 + pass albumId
+        const link = `album_photos.html?albumId=${encodeURIComponent(a.id)}`;
+        $("#albumList").append(`<li><a href="${link}">${esc(a.title)}</a></li>`);
+      });
+
+      $("#albumList").show();
+      $("#albumStatus").hide();
     }
 
     $(function(){
-      // initial load
-      loadUserAndAlbums($("#userSelect").val());
+      // Load user
+      $.getJSON(USER_URL)
+        .done(renderUser)
+        .fail(() => showError("#userStatus", "Failed to load user from the required URL."));
 
-      // reload when user changes
-      $("#userSelect").on("change", function(){
-        loadUserAndAlbums(this.value);
-      });
+      // Load albums for that user
+      $.getJSON(ALBUMS_URL)
+        .done(renderAlbums)
+        .fail(() => showError("#albumStatus", "Failed to load albums from the required URL."));
     });
   </script>
 </body>
