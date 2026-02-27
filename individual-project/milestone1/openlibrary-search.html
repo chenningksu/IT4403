@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Milestone 1 - OpenLibrary (Search)</title>
+  <style>
+    :root{--bg:#f4f6f8;--card:#fff;--text:#111827;--muted:#4b5563;--brand:#0b3c5d;--border:#e5e7eb;}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
+    header{background:var(--brand);color:#fff;padding:22px 16px}
+    header h1{margin:0 0 6px;font-size:1.6rem}
+    header p{margin:0;color:rgba(255,255,255,.85)}
+    main{max-width:1100px;margin:0 auto;padding:18px 16px 40px}
+    .small{font-size:.92rem;color:var(--muted)}
+    .list{display:grid;grid-template-columns:1fr;gap:12px;margin-top:12px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:0 1px 8px rgba(0,0,0,.06)}
+    .row{display:grid;grid-template-columns:96px 1fr;gap:12px;padding:12px}
+    .thumb{width:96px;border:1px solid var(--border);border-radius:10px;background:#fff}
+    .title{margin:0;font-size:1.05rem}
+    .meta{color:var(--muted);font-size:.92rem;margin-top:2px}
+    .err{background:#fff1f2;border:1px solid #ffe4e6;color:#9f1239;padding:12px;border-radius:12px}
+  </style>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+</head>
+<body>
+  <header>
+    <h1>OpenLibrary JSON — Search Results Display</h1>
+    <p>IT 4403 Individual Project • Milestone 1 • Chris Henning</p>
+  </header>
+
+  <main>
+    <div class="small">Data source: <b>openlibrary-search.json</b></div>
+    <div id="status" class="small" style="margin-top:10px;">Loading JSON…</div>
+    <div id="results" class="list" style="display:none;"></div>
+  </main>
+
+  <script>
+    function safeText(x){ return (x===null || x===undefined) ? "" : String(x); }
+    function joinArr(arr){ return Array.isArray(arr) && arr.length ? arr.join(", ") : ""; }
+
+    // OpenLibrary cover: https://covers.openlibrary.org/b/id/{cover_i}-M.jpg
+    function coverUrl(cover_i){
+      if (!cover_i) return "";
+      return "https://covers.openlibrary.org/b/id/" + cover_i + "-M.jpg";
+    }
+
+    $(function(){
+      $.getJSON("openlibrary-search.json")
+        .done(function(data){
+          $("#status").hide(); $("#results").show();
+
+          var docs = data.docs || [];
+          if (!Array.isArray(docs) || docs.length === 0){
+            $("#results").html('<div class="err"><b>No results:</b> docs[] was empty.</div>');
+            return;
+          }
+
+          var html = "";
+          for (var i=0;i<docs.length;i++){
+            var d = docs[i] || {};
+            var img = coverUrl(d.cover_i);
+            var title = safeText(d.title) || "Untitled";
+            var author = joinArr(d.author_name) || "N/A";
+            var publisher = joinArr(d.publisher) || "N/A";
+            var year = (Array.isArray(d.publish_year) && d.publish_year.length) ? d.publish_year[0] : "N/A";
+            var olKey = safeText(d.key);
+            var olLink = olKey ? ("https://openlibrary.org" + olKey) : "";
+
+            html += ''
+              + '<div class="card"><div class="row">'
+              +   '<div>' + (img ? '<img class="thumb" alt="Cover" src="'+img+'">' : '<div class="thumb small" style="display:flex;align-items:center;justify-content:center;">No cover</div>') + '</div>'
+              +   '<div>'
+              +     '<h3 class="title">' + title + '</h3>'
+              +     '<div class="meta"><b>Author:</b> ' + author + '</div>'
+              +     '<div class="meta"><b>Publisher:</b> ' + publisher + '</div>'
+              +     '<div class="meta"><b>First publish year:</b> ' + safeText(d.first_publish_year || year) + '</div>'
+              +     '<div class="meta"><b>OpenLibrary:</b> ' + (olLink ? '<a href="'+olLink+'" target="_blank" rel="noopener">'+olLink+'</a>' : 'N/A') + '</div>'
+              +     '<div class="meta"><b>ISBNs:</b> ' + (Array.isArray(d.isbn) ? d.isbn.slice(0,5).join(", ") : "N/A") + '</div>'
+              +   '</div>'
+              + '</div></div>';
+          }
+
+          $("#results").html(html);
+        })
+        .fail(function(){
+          $("#status").html('<div class="err"><b>Error:</b> Could not load openlibrary-search.json.</div>');
+        });
+    });
+  </script>
+</body>
+</html>
