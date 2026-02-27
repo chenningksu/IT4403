@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Milestone 1 - IT eBooks (Search)</title>
+  <style>
+    :root{--bg:#f4f6f8;--card:#fff;--text:#111827;--muted:#4b5563;--brand:#0b3c5d;--border:#e5e7eb;}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
+    header{background:var(--brand);color:#fff;padding:22px 16px}
+    header h1{margin:0 0 6px;font-size:1.6rem}
+    header p{margin:0;color:rgba(255,255,255,.85)}
+    main{max-width:1100px;margin:0 auto;padding:18px 16px 40px}
+    .small{font-size:.92rem;color:var(--muted)}
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    @media (max-width:980px){.grid{grid-template-columns:repeat(2,1fr)}}
+    @media (max-width:620px){.grid{grid-template-columns:1fr}}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:0 1px 8px rgba(0,0,0,.06);overflow:hidden}
+    .body{padding:12px}
+    .thumb{width:100%;max-width:180px;border:1px solid var(--border);border-radius:10px;background:#fff}
+    .title{margin:10px 0 4px}
+    .meta{color:var(--muted);font-size:.92rem}
+    .err{background:#fff1f2;border:1px solid #ffe4e6;color:#9f1239;padding:12px;border-radius:12px}
+  </style>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+</head>
+<body>
+  <header>
+    <h1>IT eBooks JSON — Search Results Display</h1>
+    <p>IT 4403 Individual Project • Milestone 1 • Chris Henning</p>
+  </header>
+  <main>
+    <div class="small">Data source: <b>it-ebooks-search.json</b></div>
+    <div id="status" class="small" style="margin-top:10px;">Loading JSON…</div>
+    <div id="results" class="grid" style="display:none;margin-top:12px;"></div>
+  </main>
+
+  <script>
+    function safeText(x){ return (x===null || x===undefined) ? "" : String(x); }
+
+    $(function(){
+      $.getJSON("it-ebooks-search.json")
+        .done(function(data){
+          $("#status").hide();
+          $("#results").show();
+
+          var books = data.Books || [];
+          if (!Array.isArray(books) || books.length === 0){
+            $("#results").html('<div class="err"><b>No results:</b> Books[] was empty.</div>');
+            return;
+          }
+
+          var html = "";
+          for (var i=0;i<books.length;i++){
+            var b = books[i] || {};
+            html += ''
+              + '<div class="card"><div class="body">'
+              + (b.Image ? '<img class="thumb" alt="Book cover" src="'+ b.Image +'">' : '<div class="meta">No image</div>')
+              + '<h3 class="title">' + safeText(b.Title) + '</h3>'
+              + (b.SubTitle ? '<div class="meta">' + safeText(b.SubTitle) + '</div>' : '')
+              + (b.Description ? '<p>' + safeText(b.Description) + '</p>' : '<p class="meta">No description.</p>')
+              + '<div class="meta"><b>ISBN:</b> ' + (safeText(b.isbn) || "N/A") + '</div>'
+              + '<div class="meta"><b>ID:</b> ' + (safeText(b.ID) || "N/A") + '</div>'
+              + '</div></div>';
+          }
+          $("#results").html(html);
+        })
+        .fail(function(){
+          $("#status").html('<div class="err"><b>Error:</b> Could not load it-ebooks-search.json. Ensure it is in the same folder and served from your website.</div>');
+        });
+    });
+  </script>
+</body>
+</html>
