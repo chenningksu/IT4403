@@ -1,15 +1,14 @@
-const API_BASE = "https://www.googleapis.com/books/v1/users/114449580570970596864/bookshelves/1001/volumes";
-const API_KEY = ""; // optional; leave "" if you are not using one
+
 const RESULTS_PER_PAGE = 20;
 const MAX_TOTAL_RESULTS = 60;
 
-// Replace these with your actual Google Books volume IDs from your public bookshelf
+// Google Books volume IDs from bookshelf
 const MY_BOOKSHELF_IDS = [
-  "zyTCAlFPjgYC",
-  "uWfqDwAAQBAJ",
-  "m8dPPgAACAAJ",
-  "1wy49i_gQjIC",
-  "7NIpzgEACAAJ"
+  "r10U16kgmkwC",
+  "StAWAgAAQBAJ",
+  "y-9wCgAAQBAJ",
+  "O4idLMoEc4wC",
+  "L6IWAgAAQBAJ"
 ];
 
 function apiUrl(path, params = {}) {
