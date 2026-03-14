@@ -1,4 +1,4 @@
-const API_BASE = "https://www.googleapis.com/books/v1";
+const API_BASE = "https://www.googleapis.com/books/v1/users/114449580570970596864/bookshelves/1001/volumes";
 const API_KEY = ""; // optional; leave "" if you are not using one
 const RESULTS_PER_PAGE = 20;
 const MAX_TOTAL_RESULTS = 60;
