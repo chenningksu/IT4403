@@ -1,4 +1,5 @@
-
+const API_BASE = "https://www.googleapis.com/books/v1";
+const API_KEY = "";
 const RESULTS_PER_PAGE = 20;
 const MAX_TOTAL_RESULTS = 60;
 
@@ -250,4 +251,4 @@ function loadBookshelf() {
       });
   });
 }
-}
+
