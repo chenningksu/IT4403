@@ -222,28 +222,32 @@ function loadBookshelf() {
 
   $("#bookshelfResults").html(`<div class="small">Loading bookshelf books...</div>`);
 
-  const requests = MY_BOOKSHELF_IDS.map(id => $.getJSON(apiUrl(`/volumes/${encodeURIComponent(id)}`)));
+  let completed = 0;
+  let html = `<div class="results-grid">`;
 
-  $.when.apply($, requests)
-    .done(function () {
-      let responses = [];
-
-      if (MY_BOOKSHELF_IDS.length === 1) {
-        responses = [arguments];
-      } else {
-        responses = Array.from(arguments);
-      }
-
-      let html = `<div class="results-grid">`;
-      responses.forEach(response => {
-        const item = response[0];
+  MY_BOOKSHELF_IDS.forEach(function (id) {
+    $.getJSON(apiUrl(`/volumes/${encodeURIComponent(id)}`))
+      .done(function (item) {
         html += createBookCard(item);
-      });
-      html += `</div>`;
+      })
+      .fail(function (jqxhr, textStatus, error) {
+        console.log("Bookshelf load failed for ID:", id, textStatus, error);
+        html += `
+          <div class="book-card">
+            <div class="book-body">
+              <div class="small">Could not load book ID: ${id}</div>
+            </div>
+          </div>
+        `;
+      })
+      .always(function () {
+        completed++;
 
-      $("#bookshelfResults").html(html);
-    })
-    .fail(function () {
-      $("#bookshelfResults").html(`<div class="error">Could not load bookshelf books.</div>`);
-    });
+        if (completed === MY_BOOKSHELF_IDS.length) {
+          html += `</div>`;
+          $("#bookshelfResults").html(html);
+        }
+      });
+  });
+}
 }
