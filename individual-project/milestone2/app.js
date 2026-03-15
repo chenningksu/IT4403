@@ -223,23 +223,19 @@ function loadBookshelf() {
 
   $("#bookshelfResults").html(`<div class="small">Loading bookshelf books...</div>`);
 
-  const requests = MY_BOOKSHELF_IDS.map(function (id) {
-    return $.getJSON(apiUrl(`/volumes/${encodeURIComponent(id)}`))
-      .then(function (item) {
-        return createBookCard(item);
-      })
-      .catch(function () {
-        return `
-          <div class="book-card">
-            <div class="book-body">
-              <div class="small">Could not load book ID: ${id}</div>
-            </div>
+  const requests = MY_BOOKSHELF_IDS.map(id =>
+    $.getJSON(apiUrl(`/volumes/${id}`))
+      .then(createBookCard)
+      .catch(() => `
+        <div class="book-card">
+          <div class="book-body">
+            <div class="small">Could not load book ID: ${id}</div>
           </div>
-        `;
-      });
-  });
+        </div>
+      `)
+  );
 
-  Promise.all(requests).then(function (cards) {
+  Promise.all(requests).then(cards => {
     $("#bookshelfResults").html(`
       <div class="results-grid">
         ${cards.join("")}
