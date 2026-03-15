@@ -25,6 +25,7 @@
     <p>Search Google Books by keyword and view up to 60 results with pagination.</p>
 
     <div class="controls">
+      <label for="searchTerm" class="small">Search for books</label>
       <input type="text" id="searchTerm" placeholder="Enter search terms, such as web development">
       <button id="searchBtn">Search</button>
       <select id="pageSelect" aria-label="Select page number"></select>
@@ -46,7 +47,7 @@
       runSearch(1);
     });
 
-    $("#searchTerm").on("keypress", function (e) {
+    $("#searchTerm").on("keydown", function (e) {
       if (e.which === 13) {
         runSearch(1);
       }
