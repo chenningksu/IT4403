@@ -111,46 +111,65 @@ function buildPageOptions(totalItems, currentPage) {
 
 function runSearch(page = 1) {
   const q = $("#searchTerm").val().trim();
+
   if (!q) {
     $("#results").html(`<div class="error">Enter a search term first.</div>`);
     $("#pageSelect").html("");
+    $("#pageGroup").hide();
     $("#resultSummary").text("");
     return;
   }
 
   $("#results").html(`<div class="small">Loading results...</div>`);
+  $("#resultSummary").text("");
+  $("#pageGroup").hide();
 
   const startIndex = (page - 1) * RESULTS_PER_PAGE;
 
   $.getJSON(
     apiUrl("/volumes", {
-      q,
-      startIndex,
+      q: q,
+      startIndex: startIndex,
       maxResults: RESULTS_PER_PAGE
     })
   )
     .done(function (data) {
       const items = data.items || [];
       const totalItems = Math.min(data.totalItems || 0, MAX_TOTAL_RESULTS);
-
-      $("#resultSummary").text(`Showing up to ${MAX_TOTAL_RESULTS} results. Currently on page ${page}.`);
-      $("#pageSelect").html(buildPageOptions(totalItems, page));
+      const totalPages = Math.ceil(totalItems / RESULTS_PER_PAGE);
 
       if (!items.length) {
         $("#results").html(`<div class="error">No results found.</div>`);
+        $("#pageSelect").html("");
+        $("#pageGroup").hide();
+        $("#resultSummary").text("");
         return;
       }
 
+      $("#resultSummary").text(`Showing page ${page} of ${totalPages}.`);
+
+      if (totalPages > 1) {
+        $("#pageSelect").html(buildPageOptions(totalItems, page));
+        $("#pageGroup").show();
+      } else {
+        $("#pageSelect").html("");
+        $("#pageGroup").hide();
+      }
+
       let html = `<div class="results-grid">`;
-      items.forEach(item => {
+      items.forEach(function (item) {
         html += createBookCard(item);
       });
       html += `</div>`;
 
       $("#results").html(html);
     })
-    .fail(function () {
+    .fail(function (jqxhr) {
+      console.log("Search failed:", jqxhr.responseText);
       $("#results").html(`<div class="error">Search request failed. Try again.</div>`);
+      $("#pageSelect").html("");
+      $("#pageGroup").hide();
+      $("#resultSummary").text("");
     });
 }
 
