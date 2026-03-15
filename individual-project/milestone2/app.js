@@ -3,10 +3,10 @@ const API_KEY = "AIzaSyC85nafC7d-uh3cy8Qtez2jjRB3YwZ_TGA";
 const RESULTS_PER_PAGE = 20;
 const MAX_TOTAL_RESULTS = 60;
 
-// Google Books volume IDs selected for bookshelf display
+// Google Books volume IDs selected for  my bookshelf display
 const MY_BOOKSHELF_IDS = [
   "r10U16kgmkwC",
-  "StAWAgAAQBAJ",
+  "pQ4Uil0Nml0C",
   "y-9wCgAAQBAJ",
   "O4idLMoEc4wC",
   "L6IWAgAAQBAJ"
