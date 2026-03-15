@@ -1,5 +1,5 @@
 const API_BASE = "https://www.googleapis.com/books/v1";
-const API_KEY = "";
+const API_KEY = "AIzaSyC85nafC7d-uh3cy8Qtez2jjRB3YwZ_TGA";
 const RESULTS_PER_PAGE = 20;
 const MAX_TOTAL_RESULTS = 60;
 
