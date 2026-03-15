@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lab 5 - Google Books Search</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      line-height: 1.5;
+    }
+
+    h1 {
+      margin-bottom: 10px;
+    }
+
+    #books {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .book {
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 12px;
+      background: #f9f9f9;
+    }
+
+    .book h2 {
+      font-size: 1.1rem;
+      margin-top: 0;
+    }
+
+    .label {
+      font-weight: bold;
+    }
+
+    .error {
+      color: #b00020;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>Google Books API - Data Analysis</h1>
+  <p>This page dynamically loads the top 10 Google Books results for "data analysis".</p>
+
+  <div id="status">Loading books...</div>
+  <div id="books"></div>
+
+  <script>
+    const API_KEY = ""; // optional
+    const query = "data analysis";
+
+    function buildUrl() {
+      const url = new URL("https://www.googleapis.com/books/v1/volumes");
+      url.searchParams.set("q", query);
+      url.searchParams.set("maxResults", "10");
+
+      if (API_KEY) {
+        url.searchParams.set("key", API_KEY);
+      }
+
+      return url.toString();
+    }
+
+    async function loadBooks() {
+      const status = document.getElementById("status");
+      const booksContainer = document.getElementById("books");
+
+      try {
+        const response = await fetch(buildUrl());
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        const items = data.items || [];
+
+        status.textContent = `Showing ${items.length} books`;
+
+        booksContainer.innerHTML = items.map(book => {
+          const info = book.volumeInfo || {};
+          const title = info.title || "No title available";
+          const authors = info.authors ? info.authors.join(", ") : "Unknown author";
+          const publishedDate = info.publishedDate || "No date available";
+
+          return `
+            <article class="book">
+              <h2>${title}</h2>
+              <p><span class="label">Author(s):</span> ${authors}</p>
+              <p><span class="label">Published:</span> ${publishedDate}</p>
+            </article>
+          `;
+        }).join("");
+
+      } catch (error) {
+        status.innerHTML = `<span class="error">Could not load books: ${error.message}</span>`;
+      }
+    }
+
+    loadBooks();
+  </script>
+</body>
+</html>
