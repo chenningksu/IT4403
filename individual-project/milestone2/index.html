@@ -25,12 +25,20 @@
     <p>Search Google Books by keyword and view up to 60 results with pagination.</p>
 
     <div class="controls">
-      <label for="searchTerm" class="small">Search for books</label>
-      <input type="text" id="searchTerm" placeholder="Enter search terms, such as web development">
-      <button id="searchBtn">Search</button>
-      <select id="pageSelect" aria-label="Select page number"></select>
+      <div class="search-group">
+        <label for="searchTerm" class="small">Search for books</label>
+        <div class="search-row">
+          <input type="text" id="searchTerm" placeholder="Enter search terms, such as web development">
+          <button id="searchBtn">Search</button>
+        </div>
+      </div>
+    
+      <div class="page-group" id="pageGroup" style="display:none;">
+        <label for="pageSelect" class="small">Page</label>
+        <select id="pageSelect" aria-label="Select page number"></select>
+      </div>
     </div>
-
+    
     <p id="resultSummary" class="small" style="margin-top:12px;"></p>
   </section>
 
