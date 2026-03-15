@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lab 5 - My Google Books Collection</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      line-height: 1.5;
+    }
+
+    #collection {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 18px;
+      margin-top: 20px;
+    }
+
+    .book {
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 12px;
+      background: #fafafa;
+    }
+
+    .book img {
+      max-width: 128px;
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    .book h2 {
+      font-size: 1.1rem;
+      margin-top: 0;
+    }
+
+    .label {
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>My Public Google Books Collection</h1>
+  <p>This page dynamically loads books using Volume IDs stored in a JavaScript array.</p>
+
+  <div id="status">Loading collection...</div>
+  <div id="collection"></div>
+
+  <script>
+    const API_KEY = ""; // optional
+
+    // Replace these with your own 3–5 volume IDs
+    const volumeIds = [
+      "7z60DwAAQBAJ",
+      "r10U16kgmkwC",
+      "StAWAgAAQBAJ"
+    ];
+
+    function buildVolumeUrl(volumeId) {
+      const url = new URL(`https://www.googleapis.com/books/v1/volumes/${volumeId}`);
+      if (API_KEY) {
+        url.searchParams.set("key", API_KEY);
+      }
+      return url.toString();
+    }
+
+    async function fetchBook(volumeId) {
+      const response = await fetch(buildVolumeUrl(volumeId));
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status} for ${volumeId}`);
+      }
+      return response.json();
+    }
+
+    async function loadCollection() {
+      const status = document.getElementById("status");
+      const container = document.getElementById("collection");
+
+      try {
+        const books = await Promise.all(volumeIds.map(fetchBook));
+
+        status.textContent = `Showing ${books.length} books from my collection`;
+
+        container.innerHTML = books.map(book => {
+          const info = book.volumeInfo || {};
+          const title = info.title || "No title available";
+          const authors = info.authors ? info.authors.join(", ") : "Unknown author";
+          const publishedDate = info.publishedDate || "No date available";
+          const cover = info.imageLinks?.thumbnail || "";
+
+          return `
+            <article class="book">
+              ${cover ? `<img src="${cover}" alt="Cover for ${title}">` : `<p>No cover image available</p>`}
+              <h2>${title}</h2>
+              <p><span class="label">Author(s):</span> ${authors}</p>
+              <p><span class="label">Published:</span> ${publishedDate}</p>
+            </article>
+          `;
+        }).join("");
+
+      } catch (error) {
+        status.textContent = `Error loading collection: ${error.message}`;
+      }
+    }
+
+    loadCollection();
+  </script>
+</body>
+</html>
