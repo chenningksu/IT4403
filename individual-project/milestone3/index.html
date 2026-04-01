@@ -275,11 +275,18 @@
   <script>
     const API_KEY = "AIzaSyC85nafC7d-uh3cy8Qtez2jjRB3YwZ_TGA";
 
+    const MY_BOOKSHELF_IDS = [
+      "r10U16kgmkwC",
+      "pQ4Uil0Nml0C",
+      "y-9wCgAAQBAJ",
+      "O4idLMoEc4wC",
+      "L6IWAgAAQBAJ"
+    ];
+
     // Replace these with your Google user ID and public bookshelf ID.
     // Example pattern:
     // https://www.googleapis.com/books/v1/users/USER_ID/bookshelves/BOOKSHELF_ID/volumes
-    const GOOGLE_USER_ID = "https://www.googleapis.com/books/v1";
-    const BOOKSHELF_ID = "1001";
+   
 
     const SEARCH_RESULTS_PER_PAGE = 10;
     const MAX_RESULTS = 50;
@@ -436,20 +443,26 @@
     function loadBookshelf() {
       $('#bookshelfStatus').text('Loading bookshelf...');
 
-      $.getJSON(buildUrl(`https://www.googleapis.com/books/v1/users/${GOOGLE_USER_ID}/bookshelves/${BOOKSHELF_ID}/volumes`, {
-        maxResults: 10,
-        key: API_KEY
-      }))
-      .done(function (data) {
-        const items = data.items || [];
-        renderCards(items, '#bookshelfResults');
-        $('#bookshelfStatus').text(items.length ? 'Public bookshelf loaded successfully.' : 'Bookshelf is empty or unavailable.');
+    const requests = MY_BOOKSHELF_IDS.map(id =>
+      $.getJSON(`https://www.googleapis.com/books/v1/volumes/${id}?key=${API_KEY}`)
+    );
+
+    $.when(...requests)
+      .done(function () {
+        let results = [];
+
+        for (let i = 0; i < arguments.length; i++) {
+        results.push(arguments[i][0]);
+        }
+
+        renderCards(results, '#bookshelfResults');
+        $('#bookshelfStatus').text('Custom bookshelf loaded.');
       })
-      .fail(function (xhr) {
-        $('#bookshelfStatus').text(`Error loading bookshelf: ${xhr.status} ${xhr.statusText}`);
-        $('#bookshelfResults').html('<div class="empty">Unable to load the bookshelf right now.</div>');
+      .fail(function () {
+        $('#bookshelfStatus').text('Error loading bookshelf.');
+        $('#bookshelfResults').html('<div class="empty">Unable to load bookshelf.</div>');
       });
-    }
+  }
 
     $(document).ready(function () {
       $('#searchBtn').on('click', searchBooks);
