@@ -374,43 +374,55 @@
       renderPagination();
       $('#searchStatus').text(`Showing page ${currentPage} of ${Math.max(1, Math.ceil(currentSearchResults.length / SEARCH_RESULTS_PER_PAGE))}`);
     }
-
     function searchBooks() {
       const query = $('#searchInput').val().trim();
-
+    
       if (!query) {
         $('#searchStatus').text('Please enter a search term.');
         $('#searchResults').empty();
         $('#searchPagination').empty();
         return;
       }
-
+    
       $('#searchSummary').text(`Searching for "${query}"...`);
       $('#searchStatus').text('Loading search results...');
-
-      $.getJSON(buildUrl('https://www.googleapis.com/books/v1/volumes', {
+    
+      const request1 = $.getJSON(buildUrl('https://www.googleapis.com/books/v1/volumes', {
         q: query,
-        maxResults: MAX_RESULTS,
+        startIndex: 0,
+        maxResults: 40,
         key: API_KEY
-      }))
-      .done(function (data) {
-        currentSearchResults = data.items || [];
-        currentPage = 1;
-        renderSearchPage();
-        $('#searchSummary').text(`Results for "${query}"`);
-
-        if (!currentSearchResults.length) {
-          $('#searchStatus').text('No results found for that search.');
-        }
-      })
-      .fail(function (xhr) {
-        $('#searchSummary').text('Search failed');
-        $('#searchStatus').text(`Error loading search results: ${xhr.status} ${xhr.statusText}`);
-        $('#searchResults').empty();
-        $('#searchPagination').empty();
-      });
+      }));
+    
+      const request2 = $.getJSON(buildUrl('https://www.googleapis.com/books/v1/volumes', {
+        q: query,
+        startIndex: 40,
+        maxResults: 10,
+        key: API_KEY
+      }));
+    
+      $.when(request1, request2)
+        .done(function (response1, response2) {
+          const items1 = response1[0].items || [];
+          const items2 = response2[0].items || [];
+    
+          currentSearchResults = [...items1, ...items2];
+          currentPage = 1;
+          renderSearchPage();
+          $('#searchSummary').text(`Results for "${query}"`);
+    
+          if (!currentSearchResults.length) {
+            $('#searchStatus').text('No results found for that search.');
+          }
+        })
+        .fail(function (xhr) {
+          $('#searchSummary').text('Search failed');
+          $('#searchStatus').text('Error loading search results.');
+          $('#searchResults').empty();
+          $('#searchPagination').empty();
+        });
     }
-
+    
     function loadBookDetails(volumeId) {
       $('#detailsContent').html('<p class="small-text">Loading details...</p>');
 
