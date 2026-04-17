@@ -140,10 +140,13 @@ button:disabled {
   grid-template-columns: 100px 1fr;
   min-height: auto;
   align-items: start;
+  gap: 12px;
 }
 
 .list .book-card img {
+  width: 100px;
   height: 140px;
+  object-fit: cover;
 }
 
 .list .book-card .info {
@@ -223,6 +226,12 @@ button:disabled {
 
 .details-box {
   min-height: 300px;
+  postion: sticky;
+  top: 20px;
+}
+
+.details-box p {
+  line-height: 1.6;
 }
 
 .details-box img {
@@ -259,8 +268,32 @@ button:disabled {
 }
 
 @media (max-width: 640px) {
-  .controls { grid-template-columns: 1fr; }
-  header h1 { font-size: 1.6rem; }
+  .controls {
+    grid-template-columns: 1fr;
+  }
+
+  header h1 {
+    font-size: 1.6rem;
+  }
+
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .tab-buttons,
+  .view-buttons {
+    justify-content: center;
+  }
+
+  .list .book-card {
+    grid-template-columns: 1fr;
+  }
+
+  .list .book-card img {
+    width: 100%;
+    height: 220px;
+  }
 }
 
 footer {
