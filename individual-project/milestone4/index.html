@@ -11,7 +11,7 @@
 <body>
   <header>
     <h1>Google Books Single Page Application</h1>
-    <p>Search books, browse a public bookshelf, and view details without reloading the page. Now with Mustache.js</p>
+    <p>Search books, browse a public bookshelf, and view details without reloading the page. Now with Mustache.js.</p>
   </header>
 
   <main class="container">
@@ -23,40 +23,29 @@
       <div class="small-text" id="searchSummary">Ready to search</div>
     </section>
 
+    <section class="toolbar panel">
+      <div class="tab-buttons">
+        <button id="showSearchTab" class="active-tab">Search Results</button>
+        <button id="showBookshelfTab">My Bookshelf</button>
+      </div>
+
+      <div class="view-buttons">
+        <button id="gridViewBtn" class="active-view">Grid View</button>
+        <button id="listViewBtn">List View</button>
+      </div>
+    </section>
+
     <section class="layout">
       <div class="two-sections">
-        <section class="toolbar panel">
-  <div class="tab-buttons">
-    <button id="showSearchTab" class="active-tab">Search Results</button>
-    <button id="showBookshelfTab">My Bookshelf</button>
-  </div>
-          <section id="searchSection" class="panel">
-  <h2>Search Results</h2>
-  <div id="searchResults" class="grid"></div>
-  <div id="searchPagination" class="pagination"></div>
-  <div id="searchStatus" class="status"></div>
-</section>
-
-<section id="bookshelfSection" class="panel hidden">
-  <h2>My Bookshelf</h2>
-  <div id="bookshelfResults" class="grid"></div>
-  <div id="bookshelfStatus" class="status"></div>
-</section>
-
-  <div class="view-buttons">
-    <button id="gridViewBtn" class="active-view">Grid View</button>
-    <button id="listViewBtn">List View</button>
-  </div>
-</section>
-        <section class="panel">
+        <section id="searchSection" class="panel">
           <h2>Search Results</h2>
           <div id="searchResults" class="grid"></div>
           <div id="searchPagination" class="pagination"></div>
           <div id="searchStatus" class="status"></div>
         </section>
 
-        <section class="panel">
-          <h2>My Public Bookshelf</h2>
+        <section id="bookshelfSection" class="panel hidden">
+          <h2>My Bookshelf</h2>
           <div id="bookshelfResults" class="grid"></div>
           <div id="bookshelfStatus" class="status"></div>
         </section>
@@ -64,7 +53,9 @@
 
       <aside class="panel details-box">
         <h2>Book Details</h2>
-        <div id="detailsContent" class="empty">Click a book from the search results or bookshelf to see full details here.</div>
+        <div id="detailsContent" class="empty">
+          Click a book from the search results or bookshelf to see full details here.
+        </div>
       </aside>
     </section>
   </main>
@@ -72,33 +63,35 @@
   <footer>
     <p>&copy; 2026 Chris Henning</p>
   </footer>
+
   <script id="book-card-template" type="x-tmpl-mustache">
-  {{#books}}
-  <article class="book-card {{viewClass}}" data-id="{{id}}">
-    <img src="{{thumbnail}}" alt="Book cover for {{title}}" />
-    <div class="info">
-      <h3>{{title}}</h3>
-      <div class="small-text">{{authors}}</div>
-      {{#isListView}}
-      <div class="small-text">{{publisher}}</div>
-      <div class="small-text">{{publishedDate}}</div>
-      {{/isListView}}
-    </div>
-  </article>
-  {{/books}}
-</script>
+    {{#books}}
+    <article class="book-card {{viewClass}}" data-id="{{id}}">
+      <img src="{{thumbnail}}" alt="Book cover for {{title}}" />
+      <div class="info">
+        <h3>{{title}}</h3>
+        <div class="small-text">{{authors}}</div>
+        {{#isListView}}
+        <div class="small-text">{{publisher}}</div>
+        <div class="small-text">{{publishedDate}}</div>
+        {{/isListView}}
+      </div>
+    </article>
+    {{/books}}
+  </script>
+
   <script id="book-details-template" type="x-tmpl-mustache">
-  <img src="{{thumbnail}}" alt="Book cover for {{title}}" />
-  <h3>{{title}}</h3>
-  <div class="detail-meta"><strong>Author(s):</strong> {{authors}}</div>
-  <div class="detail-meta"><strong>Published:</strong> {{publishedDate}}</div>
-  <div class="detail-meta"><strong>Categories:</strong> {{categories}}</div>
-  <div class="detail-meta"><strong>Publisher:</strong> {{publisher}}</div>
-  <div class="detail-meta"><strong>Page Count:</strong> {{pageCount}}</div>
-  <div class="detail-meta"><strong>Language:</strong> {{language}}</div>
-  <p>{{description}}</p>
-</script>
+    <img src="{{thumbnail}}" alt="Book cover for {{title}}" />
+    <h3>{{title}}</h3>
+    <div class="detail-meta"><strong>Author(s):</strong> {{authors}}</div>
+    <div class="detail-meta"><strong>Published:</strong> {{publishedDate}}</div>
+    <div class="detail-meta"><strong>Categories:</strong> {{categories}}</div>
+    <div class="detail-meta"><strong>Publisher:</strong> {{publisher}}</div>
+    <div class="detail-meta"><strong>Page Count:</strong> {{pageCount}}</div>
+    <div class="detail-meta"><strong>Language:</strong> {{language}}</div>
+    <p>{{description}}</p>
+  </script>
+
   <script src="app.js"></script>
 </body>
 </html>
-
