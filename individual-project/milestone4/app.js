@@ -1,4 +1,4 @@
-const API_KEY = "AIzaSyC85nafC7d-uh3cy8Qtez2jjRB3YwZ_TGA";
+const API_KEY = "key";
 
 const MY_BOOKSHELF_IDS = [
   "r10U16kgmkwC",
@@ -9,37 +9,23 @@ const MY_BOOKSHELF_IDS = [
 ];
 
 const SEARCH_RESULTS_PER_PAGE = 10;
-const MAX_RESULTS = 40;
 
 let currentSearchResults = [];
+let currentBookshelfResults = [];
 let currentPage = 1;
 let currentView = 'grid';
 let activeTab = 'search';
 
 function buildUrl(base, params = {}) {
   const url = new URL(base);
+
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined && value !== null && value !== "") {
       url.searchParams.set(key, value);
     }
   });
-  return url.toString();
-}
-function formatBook(item) {
-  const info = item.volumeInfo || {};
 
-  return {
-    id: item.id,
-    title: info.title || 'Untitled',
-    authors: (info.authors || ['Unknown author']).join(', '),
-    publisher: info.publisher || 'Not available',
-    publishedDate: info.publishedDate || 'Not available',
-    thumbnail: getThumbnail(info),
-    description: info.description || 'No description available.',
-    categories: (info.categories || ['Not available']).join(', '),
-    pageCount: info.pageCount || 'Not available',
-    language: info.language || 'Not available'
-  };
+  return url.toString();
 }
 
 function getThumbnail(volumeInfo) {
@@ -48,13 +34,23 @@ function getThumbnail(volumeInfo) {
     || "https://via.placeholder.com/128x190?text=No+Cover";
 }
 
-function safeText(value, fallback = "Not available") {
-  return value ? value : fallback;
-}
+function formatBook(item) {
+  const info = item.volumeInfo || {};
 
-function truncate(text, maxLength = 110) {
-  if (!text) return "No description available.";
-  return text.length > maxLength ? text.slice(0, maxLength) + "..." : text;
+  return {
+    id: item.id,
+    title: info.title || "Untitled",
+    authors: (info.authors || ["Unknown author"]).join(", "),
+    publisher: info.publisher || "Not available",
+    publishedDate: info.publishedDate || "Not available",
+    thumbnail: getThumbnail(info),
+    description: info.description || "No description available.",
+    categories: (info.categories || ["Not available"]).join(", "),
+    pageCount: info.pageCount || "Not available",
+    language: info.language || "Not available",
+    viewClass: currentView === "grid" ? "grid-item" : "list-item",
+    isListView: currentView === "list"
+  };
 }
 
 function renderCards(items, targetSelector) {
@@ -69,12 +65,7 @@ function renderCards(items, targetSelector) {
   const template = $('#book-card-template').html();
 
   const viewData = {
-    books: items.map(item => {
-      const book = formatBook(item);
-      book.viewClass = currentView === 'grid' ? 'grid-item' : 'list-item';
-      book.isListView = currentView === 'list';
-      return book;
-    })
+    books: items.map(item => formatBook(item))
   };
 
   const rendered = Mustache.render(template, viewData);
@@ -88,26 +79,6 @@ function renderCards(items, targetSelector) {
   $target.removeClass('grid list').addClass(currentView);
 }
 
-  items.forEach(item => {
-    const info = item.volumeInfo || {};
-    const card = $(`
-      <article class="book-card" data-id="${item.id}">
-        <img src="${getThumbnail(info)}" alt="Book cover for ${safeText(info.title, 'Untitled book')}" />
-        <div class="info">
-          <h3>${safeText(info.title, 'Untitled')}</h3>
-          <div class="small-text">${safeText((info.authors || []).join(', '), 'Unknown author')}</div>
-        </div>
-      </article>
-    `);
-
-    card.on('click', function () {
-      loadBookDetails(item.id);
-    });
-
-    $target.append(card);
-  });
-}
-
 function renderPagination() {
   const totalPages = Math.ceil(currentSearchResults.length / SEARCH_RESULTS_PER_PAGE);
   const $pagination = $('#searchPagination');
@@ -117,10 +88,12 @@ function renderPagination() {
 
   for (let i = 1; i <= totalPages; i++) {
     const btn = $(`<button class="page-btn ${i === currentPage ? 'active' : ''}">${i}</button>`);
+
     btn.on('click', function () {
       currentPage = i;
       renderSearchPage();
     });
+
     $pagination.append(btn);
   }
 }
@@ -132,7 +105,14 @@ function renderSearchPage() {
 
   renderCards(pageItems, '#searchResults');
   renderPagination();
-  $('#searchStatus').text(`Showing page ${currentPage} of ${Math.max(1, Math.ceil(currentSearchResults.length / SEARCH_RESULTS_PER_PAGE))}`);
+
+  $('#searchStatus').text(
+    `Showing page ${currentPage} of ${Math.max(1, Math.ceil(currentSearchResults.length / SEARCH_RESULTS_PER_PAGE))}`
+  );
+}
+
+function renderBookshelf() {
+  renderCards(currentBookshelfResults, '#bookshelfResults');
 }
 
 function searchBooks() {
@@ -170,6 +150,7 @@ function searchBooks() {
       currentSearchResults = [...items1, ...items2];
       currentPage = 1;
       renderSearchPage();
+      showTab('search');
       $('#searchSummary').text(`Results for "${query}"`);
 
       if (!currentSearchResults.length) {
@@ -207,10 +188,7 @@ function setView(viewName) {
   $('#listViewBtn').toggleClass('active-view', viewName === 'list');
 
   renderSearchPage();
-
-  if ($('#bookshelfResults').children().length) {
-    loadBookshelf();
-  }
+  renderBookshelf();
 }
 
 function loadBookDetails(volumeId) {
@@ -219,27 +197,16 @@ function loadBookDetails(volumeId) {
   $.getJSON(buildUrl(`https://www.googleapis.com/books/v1/volumes/${volumeId}`, {
     key: API_KEY
   }))
-  .done(function (data) {
-    const info = data.volumeInfo || {};
-    const authors = info.authors ? info.authors.join(', ') : 'Unknown author';
-    const categories = info.categories ? info.categories.join(', ') : 'Not available';
-    const publishedDate = info.publishedDate || 'Not available';
-    const description = info.description || 'No description available.';
-
-    $('#detailsContent').html(`
-      <img src="${getThumbnail(info)}" alt="Book cover for ${safeText(info.title, 'Untitled book')}" />
-      <h3>${safeText(info.title, 'Untitled')}</h3>
-      <div class="detail-meta"><strong>Author(s):</strong> ${authors}</div>
-      <div class="detail-meta"><strong>Published:</strong> ${publishedDate}</div>
-      <div class="detail-meta"><strong>Categories:</strong> ${categories}</div>
-      <div class="detail-meta"><strong>Publisher:</strong> ${safeText(info.publisher)}</div>
-      <div class="detail-meta"><strong>Page Count:</strong> ${safeText(info.pageCount, 'Not available')}</div>
-      <p>${description}</p>
-    `);
-  })
-  .fail(function (xhr) {
-    $('#detailsContent').html(`<p class="small-text">Could not load details: ${xhr.status} ${xhr.statusText}</p>`);
-  });
+    .done(function (data) {
+      const template = $('#book-details-template').html();
+      const rendered = Mustache.render(template, formatBook(data));
+      $('#detailsContent').html(rendered);
+    })
+    .fail(function (xhr) {
+      $('#detailsContent').html(
+        `<p class="small-text">Could not load details: ${xhr.status} ${xhr.statusText}</p>`
+      );
+    });
 }
 
 function loadBookshelf() {
@@ -257,7 +224,8 @@ function loadBookshelf() {
         results.push(arguments[i][0]);
       }
 
-      renderCards(results, '#bookshelfResults');
+      currentBookshelfResults = results;
+      renderBookshelf();
       $('#bookshelfStatus').text('Custom bookshelf loaded.');
     })
     .fail(function () {
