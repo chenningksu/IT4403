@@ -142,27 +142,40 @@ function searchBooks() {
     key: API_KEY
   }));
 
-  $.when(request1, request2)
-    .done(function (response1, response2) {
-      const items1 = response1[0].items || [];
-      const items2 = response2[0].items || [];
+$.when(request1, request2)
+  .done(function (response1, response2) {
+    const items1 = response1[0].items || [];
+    const items2 = response2[0]?.items || [];
 
-      currentSearchResults = [...items1, ...items2];
+    currentSearchResults = [...items1, ...items2];
+    currentPage = 1;
+    renderSearchPage();
+    showTab('search');
+
+    $('#searchSummary').text(`Results for "${query}"`);
+
+    if (!currentSearchResults.length) {
+      $('#searchStatus').text('No results found for that search.');
+    }
+  })
+  .fail(function (xhr1, xhr2) {
+    // Try to still use first request if second fails
+    if (xhr1?.status === 200) {
+      const items1 = xhr1.responseJSON.items || [];
+
+      currentSearchResults = items1;
       currentPage = 1;
       renderSearchPage();
       showTab('search');
-      $('#searchSummary').text(`Results for "${query}"`);
 
-      if (!currentSearchResults.length) {
-        $('#searchStatus').text('No results found for that search.');
-      }
-    })
-    .fail(function () {
+      $('#searchStatus').text('Showing partial results (API limit).');
+    } else {
       $('#searchSummary').text('Search failed');
       $('#searchStatus').text('Error loading search results.');
       $('#searchResults').empty();
       $('#searchPagination').empty();
-    });
+    }
+  });
 }
 
 function showTab(tabName) {
