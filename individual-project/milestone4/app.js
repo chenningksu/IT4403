@@ -29,9 +29,12 @@ function buildUrl(base, params = {}) {
 }
 
 function getThumbnail(volumeInfo) {
-  return volumeInfo?.imageLinks?.thumbnail
-    || volumeInfo?.imageLinks?.smallThumbnail
-    || "https://via.placeholder.com/128x190?text=No+Cover";
+  const thumbnail =
+    volumeInfo?.imageLinks?.thumbnail ||
+    volumeInfo?.imageLinks?.smallThumbnail ||
+    "https://via.placeholder.com/128x190?text=No+Cover";
+
+  return thumbnail.replace("http://", "https://");
 }
 
 function formatBook(item) {
