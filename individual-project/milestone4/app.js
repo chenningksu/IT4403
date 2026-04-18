@@ -168,7 +168,7 @@ function runSearch(query, isRetry) {
 
       $('#searchSummary').text('Search unavailable');
       $('#searchStatus').text(
-        `Google Books could not complete this search (${xhr.status}). Try another keyword.`
+        `Search temporarily unavailable (${xhr.status}). Try another keyword.`
       );
 
       $('#searchResults').empty();
