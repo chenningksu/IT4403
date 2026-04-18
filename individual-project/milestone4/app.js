@@ -128,54 +128,33 @@ function searchBooks() {
   $('#searchSummary').text(`Searching for "${query}"...`);
   $('#searchStatus').text('Loading search results...');
 
-  const request1 = $.getJSON(buildUrl('https://www.googleapis.com/books/v1/volumes', {
+  $.getJSON(buildUrl('https://www.googleapis.com/books/v1/volumes', {
     q: query,
     startIndex: 0,
-    maxResults: 40,
+    maxResults: 20,
     key: API_KEY
-  }));
-
-  const request2 = $.getJSON(buildUrl('https://www.googleapis.com/books/v1/volumes', {
-    q: query,
-    startIndex: 40,
-    maxResults: 10,
-    key: API_KEY
-  }));
-
-$.when(request1, request2)
-  .done(function (response1, response2) {
-    const items1 = response1[0].items || [];
-    const items2 = response2[0]?.items || [];
-
-    currentSearchResults = [...items1, ...items2];
-    currentPage = 1;
-    renderSearchPage();
-    showTab('search');
-
-    $('#searchSummary').text(`Results for "${query}"`);
-
-    if (!currentSearchResults.length) {
-      $('#searchStatus').text('No results found for that search.');
-    }
-  })
-  .fail(function (xhr1, xhr2) {
-    // Try to still use first request if second fails
-    if (xhr1?.status === 200) {
-      const items1 = xhr1.responseJSON.items || [];
-
-      currentSearchResults = items1;
+  }))
+    .done(function (data) {
+      currentSearchResults = data.items || [];
       currentPage = 1;
       renderSearchPage();
-      showTab('search');
 
-      $('#searchStatus').text('Showing partial results (API limit).');
-    } else {
-      $('#searchSummary').text('Search failed');
-      $('#searchStatus').text('Error loading search results.');
+      if (typeof showTab === 'function') {
+        showTab('search');
+      }
+
+      $('#searchSummary').text(`Results for "${query}"`);
+
+      if (!currentSearchResults.length) {
+        $('#searchStatus').text('No results found for that search.');
+      }
+    })
+    .fail(function (xhr) {
+      $('#searchSummary').text('Search unavailable');
+      $('#searchStatus').text(`Google Books is temporarily unavailable (${xhr.status}). Please try again later.`);
       $('#searchResults').empty();
       $('#searchPagination').empty();
-    }
-  });
+    });
 }
 
 function showTab(tabName) {
