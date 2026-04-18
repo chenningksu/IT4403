@@ -131,6 +131,11 @@ function searchBooks() {
   $('#searchSummary').text(`Searching for "${query}"...`);
   $('#searchStatus').text('Loading search results...');
 
+  runSearch(query, false);
+}
+
+// Retry logic for Google 503 issue
+function runSearch(query, isRetry) {
   $.getJSON(buildUrl('https://www.googleapis.com/books/v1/volumes', {
     q: query,
     startIndex: 0,
@@ -153,8 +158,19 @@ function searchBooks() {
       }
     })
     .fail(function (xhr) {
+      const fallbackQuery = query.replace(/\s+/g, '');
+
+      // retry once without spaces (fixes "honey bees" issue)
+      if (!isRetry && fallbackQuery !== query) {
+        runSearch(fallbackQuery, true);
+        return;
+      }
+
       $('#searchSummary').text('Search unavailable');
-      $('#searchStatus').text(`Google Books is temporarily unavailable (${xhr.status}). Please try again later.`);
+      $('#searchStatus').text(
+        `Google Books could not complete this search (${xhr.status}). Try another keyword.`
+      );
+
       $('#searchResults').empty();
       $('#searchPagination').empty();
     });
