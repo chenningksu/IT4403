@@ -135,7 +135,7 @@ function searchBooks() {
 }
 
 // Retry logic for Google 503 issue
-function runSearch(query, isRetry) {
+function runSearch(query, retryCount = 0) {
   $.getJSON(buildUrl('https://www.googleapis.com/books/v1/volumes', {
     q: query,
     startIndex: 0,
@@ -146,33 +146,22 @@ function runSearch(query, isRetry) {
       currentSearchResults = data.items || [];
       currentPage = 1;
       renderSearchPage();
-
-      if (typeof showTab === 'function') {
-        showTab('search');
-      }
-
+      showTab('search');
       $('#searchSummary').text(`Results for "${query}"`);
-
       if (!currentSearchResults.length) {
         $('#searchStatus').text('No results found for that search.');
       }
     })
     .fail(function (xhr) {
-      const fallbackQuery = query.replace(/\s+/g, '');
-
-      // retry once without spaces (fixes "honey bees" issue)
-      if (!isRetry && fallbackQuery !== query) {
-        runSearch(fallbackQuery, true);
-        return;
+      if (xhr.status === 503 && retryCount < 3) {
+        $('#searchStatus').text(`Google is busy, retrying... (${retryCount + 1}/3)`);
+        setTimeout(() => runSearch(query, retryCount + 1), 1000 * (retryCount + 1));
+      } else {
+        $('#searchSummary').text('Search unavailable');
+        $('#searchStatus').text(`Search failed after retries (${xhr.status}). Try again in a moment.`);
+        $('#searchResults').empty();
+        $('#searchPagination').empty();
       }
-
-      $('#searchSummary').text('Search unavailable');
-      $('#searchStatus').text(
-        `Search temporarily unavailable (${xhr.status}). Try another keyword.`
-      );
-
-      $('#searchResults').empty();
-      $('#searchPagination').empty();
     });
 }
 
